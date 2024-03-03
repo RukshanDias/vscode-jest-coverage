@@ -34,7 +34,27 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand("jest-coverage.getFilePath", uris);
     });
 
+    // Register the command for code selection
+    const disposableMethod = vscode.commands.registerCommand("jest-coverage.method", (uri: vscode.Uri) => {
+        fileMethodSelector.getFilePath([uri]);
+        let filePaths = fileMethodSelector.getFilePaths();
+        if (filePaths) {
+            for (const filePath of filePaths) {
+                vscode.window.showInformationMessage(filePath);
+                console.log(filePath);
+            }
+        }
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            fileMethodSelector.captureSelectionRange(editor);
+            let selection = fileMethodSelector.getSelectionRange();
+            vscode.window.showInformationMessage(`Selected lines: ${selection?.start} to ${selection?.end}`);
+        } else {
+            vscode.window.showErrorMessage("No file is opened.");
+        }
+    });
 
+    context.subscriptions.push(disposableMethod);
     context.subscriptions.push(disposableContextMenu);
     context.subscriptions.push(disposableSCM);
 }
