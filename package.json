@@ -1,41 +1,76 @@
 {
-  "name": "jest-coverage",
-  "displayName": "Jest Coverage",
-  "description": "",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.87.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "jest-coverage.helloWorld",
-        "title": "Hello World"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.87.0",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "18.x",
-    "@typescript-eslint/eslint-plugin": "^7.0.2",
-    "@typescript-eslint/parser": "^7.0.2",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.3",
-    "@vscode/test-cli": "^0.0.6",
-    "@vscode/test-electron": "^2.3.9"
-  }
+    "name": "jest-coverage",
+    "displayName": "Jest Coverage",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.87.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "jest-coverage.getFilePath",
+                "title": "Hello"
+            },
+            {
+                "command": "jest-coverage.contextMenuFilePathOption",
+                "title": "Get file test coverage"
+            },
+            {
+                "command": "jest-coverage.sourceControlMenuFilePathOption",
+                "title": "Get file test coverage"
+            },
+            {
+                "command": "jest-coverage.method",
+                "title": "Get coverage for selection"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "jest-coverage.contextMenuFilePathOption",
+                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/",
+                    "group": "navigation"
+                }
+            ],
+            "scm/resourceState/context": [
+                {
+                    "command": "jest-coverage.sourceControlMenuFilePathOption",
+                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/",
+                    "group": "navigation"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "jest-coverage.method",
+                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/ && editorHasSelection",
+                    "group": "markdown-preview-enhanced"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.87.0",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "18.x",
+        "@typescript-eslint/eslint-plugin": "^7.0.2",
+        "@typescript-eslint/parser": "^7.0.2",
+        "eslint": "^8.56.0",
+        "typescript": "^5.3.3",
+        "@vscode/test-cli": "^0.0.6",
+        "@vscode/test-electron": "^2.3.9"
+    }
 }
