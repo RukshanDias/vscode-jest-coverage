@@ -19,7 +19,24 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(disposable);
 
-   
+    // ----------------------------- Event Listeners ---------------------------------------
+    // Register the command for context menu
+    const disposableContextMenu = vscode.commands.registerCommand(
+        "jest-coverage.contextMenuFilePathOption",
+        (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
+            vscode.commands.executeCommand("jest-coverage.getFilePath", allSelections);
+        }
+    );
+
+    // Register the command for Source Control Panel
+    const disposableSCM = vscode.commands.registerCommand("jest-coverage.sourceControlMenuFilePathOption", async (...file) => {
+        const uris = file.map((item) => item.resourceUri);
+        vscode.commands.executeCommand("jest-coverage.getFilePath", uris);
+    });
+
+
+    context.subscriptions.push(disposableContextMenu);
+    context.subscriptions.push(disposableSCM);
 }
 
 export function deactivate() {}
