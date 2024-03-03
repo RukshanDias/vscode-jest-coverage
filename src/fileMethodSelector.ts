@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
+import { Helper } from "./helper";
 
 export class FileMethodSelector {
     private filePaths: string[] | undefined;
+    private testFilePaths: string[] | undefined;
     private selectionRange: SelectionRange | undefined;
     private type: CoverageType | undefined;
 
@@ -29,8 +31,24 @@ export class FileMethodSelector {
         this.selectionRange = range;
     }
 
+    public captureTestFilePaths(): void {
+        const testFilePaths: string[] = [];
+        if (this.filePaths) {
+            for (const file of this.filePaths) {
+                let output_string = file.replace(/\.js$/, ".test.js");
+                if (Helper.isFileAvailable(output_string)) {
+                    testFilePaths.push(output_string);
+                } else {
+                    testFilePaths.push("");
+                }
+            }
+            this.testFilePaths = testFilePaths;
+        }
+    }
+
     public clear(): void {
         this.filePaths = undefined;
+        this.testFilePaths = undefined;
         this.selectionRange = undefined;
         this.type = undefined;
     }
@@ -41,6 +59,10 @@ export class FileMethodSelector {
 
     public getFilePaths(): string[] | undefined {
         return this.filePaths;
+    }
+
+    public getTestFilePaths(): string[] | undefined {
+        return this.testFilePaths;
     }
 
     public getSelectionRange(): SelectionRange | undefined {
