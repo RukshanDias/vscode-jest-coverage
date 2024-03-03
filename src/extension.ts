@@ -1,26 +1,62 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import { FileMethodSelector } from "./fileMethodSelector";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    console.log('Congratulations, your extension "jest-coverage" is now active!');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "jest-coverage" is now active!');
+    let fileMethodSelector = new FileMethodSelector();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('jest-coverage.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Jest Coverage!');
-	});
+    let disposable = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
+        fileMethodSelector.getFilePath(uris);
+        let filePaths = fileMethodSelector.getFilePaths();
+        if (filePaths) {
+            for (const filePath of filePaths) {
+                vscode.window.showInformationMessage(filePath);
+                console.log(filePath);
+            }
+        }
+    });
 
-	context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
+
+    // ----------------------------- Event Listeners ---------------------------------------
+    // Register the command for context menu
+    const disposableContextMenu = vscode.commands.registerCommand(
+        "jest-coverage.contextMenuFilePathOption",
+        (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
+            vscode.commands.executeCommand("jest-coverage.getFilePath", allSelections);
+        }
+    );
+
+    // Register the command for Source Control Panel
+    const disposableSCM = vscode.commands.registerCommand("jest-coverage.sourceControlMenuFilePathOption", async (...file) => {
+        const uris = file.map((item) => item.resourceUri);
+        vscode.commands.executeCommand("jest-coverage.getFilePath", uris);
+    });
+
+    // Register the command for code selection
+    const disposableMethod = vscode.commands.registerCommand("jest-coverage.method", (uri: vscode.Uri) => {
+        fileMethodSelector.getFilePath([uri]);
+        let filePaths = fileMethodSelector.getFilePaths();
+        if (filePaths) {
+            for (const filePath of filePaths) {
+                vscode.window.showInformationMessage(filePath);
+                console.log(filePath);
+            }
+        }
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            fileMethodSelector.captureSelectionRange(editor);
+            let selection = fileMethodSelector.getSelectionRange();
+            vscode.window.showInformationMessage(`Selected lines: ${selection?.start} to ${selection?.end}`);
+        } else {
+            vscode.window.showErrorMessage("No file is opened.");
+        }
+    });
+
+    context.subscriptions.push(disposableMethod);
+    context.subscriptions.push(disposableContextMenu);
+    context.subscriptions.push(disposableSCM);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
