@@ -80,3 +80,5 @@ export type SelectionRange = {
 };
 
 export type CoverageType = "MultiFile" | "SingleFile" | "CodeSelection";
+
+export const workspacePath = vscode.workspace.rootPath;

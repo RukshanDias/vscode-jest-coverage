@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
-import { FileMethodSelector } from "./fileMethodSelector";
+import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
+import { CoverageGenerator } from "./coverageGenerator";
+import * as fs from "fs";
+import { Helper } from "./helper";
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "jest-coverage" is now active!');
@@ -14,12 +17,11 @@ export function activate(context: vscode.ExtensionContext) {
             fileMethodSelector.setCoverageType("MultiFile");
         }
         fileMethodSelector.getFilePath(uris);
-        let filePaths = fileMethodSelector.getFilePaths();
-        if (filePaths) {
-            for (const filePath of filePaths) {
-                vscode.window.showInformationMessage(filePath);
-                console.log(filePath);
-            }
+        fileMethodSelector.captureTestFilePaths();
+        let testFiles = fileMethodSelector.getTestFilePaths();
+        let files = fileMethodSelector.getFilePaths();
+        if (testFiles && files) {
+            CoverageGenerator.generateCoverage(testFiles, files);
         }
     });
 
