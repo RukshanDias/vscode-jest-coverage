@@ -1,13 +1,12 @@
 import * as vscode from "vscode";
 import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
 import { CoverageGenerator } from "./coverageGenerator";
-import * as fs from "fs";
-import { Helper } from "./helper";
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "jest-coverage" is now active!');
 
     let fileMethodSelector = new FileMethodSelector();
+    let coverageGenerator = new CoverageGenerator();
 
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
@@ -21,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
         let testFiles = fileMethodSelector.getTestFilePaths();
         let files = fileMethodSelector.getFilePaths();
         if (testFiles && files) {
-            CoverageGenerator.generateCoverage(testFiles, files);
+            coverageGenerator.generateCoverage(testFiles, files);
         }
     });
 
@@ -63,6 +62,27 @@ export function activate(context: vscode.ExtensionContext) {
         const uris = file.map((item) => item.resourceUri);
         vscode.commands.executeCommand("jest-coverage.getFilePath", uris);
     });
+
+    vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, null, context.subscriptions);
+    vscode.workspace.onDidCloseTextDocument(handleTextDocumentClosed, null, context.subscriptions);
+
+    function handleActiveTextEditorChange(editor: vscode.TextEditor | undefined) {
+        if (editor) {
+            const filePath = editor.document.uri.fsPath;
+            let hist = coverageGenerator.getDecorationsMap().get(filePath);
+            if (hist) {
+                editor.setDecorations(hist.decorationType, hist.decorations);
+            }
+        }
+    }
+
+    function handleTextDocumentClosed(document: vscode.TextDocument) {
+        const filePath = document.uri.fsPath;
+        let hist = coverageGenerator.getDecorationsMap().get(filePath);
+        if (hist) {
+            coverageGenerator.removeDecorations(filePath);
+        }
+    }
 
     context.subscriptions.push(disposableContextMenu);
     context.subscriptions.push(disposableSCM);
