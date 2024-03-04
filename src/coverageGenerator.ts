@@ -6,11 +6,11 @@ import { workspacePath } from "./fileMethodSelector";
 export class CoverageGenerator {
     private decorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> = new Map();
 
-    public async generateCoverage(filePaths: string[], testFilePaths: string[]): Promise<void> {
-        filePaths = Helper.convertPathToRelative(filePaths);
-        testFilePaths = Helper.convertPathToRelative(testFilePaths);
+    public async generateCoverage(testFilePaths: string[], filePaths: string[]): Promise<void> {
+        let relativeTestFilePaths = Helper.convertPathToRelative(testFilePaths);
+        let relativeFilePaths = Helper.convertPathToRelative(filePaths);
 
-        let command = this.generateCommand(filePaths, testFilePaths);
+        let command = this.generateCommand(relativeTestFilePaths, relativeFilePaths);
         if (command && workspacePath) {
             await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + "/coverage/coverage-final.json");
             vscode.window.showInformationMessage("view coverage");
@@ -19,11 +19,11 @@ export class CoverageGenerator {
             let coverageFilePath = workspacePath + "/coverage/coverage-final.json";
             const coverageData = this.parseCoverageReport(coverageFilePath);
             console.log(coverageData);
-            const activeEditor = vscode.window.activeTextEditor;
-            if (activeEditor) {
-                const filePath = activeEditor.document.fileName;
-                const coveredLines = coverageData[`"D:\Jest_Demo\js\sum.js"`];
-                this.highlightNotCoveredLines(filePath, [3, 13, 16, 17]);
+            for (const i in filePaths) {
+                let notCoveredLines = coverageData.get("D:\\Jest_Demo\\js\\sum.js");
+                if (notCoveredLines) {
+                    this.highlightNotCoveredLines("D:\\Jest_Demo\\js\\sum.js", notCoveredLines);
+                }
             }
         }
     }
@@ -36,18 +36,20 @@ export class CoverageGenerator {
         return Helper.convertPathToUnix(command);
     }
 
-    public highlightNotCoveredLines(filePath: string, coveredLines: number[]) {
+    public highlightNotCoveredLines(filePath: string, coveredLines: number[][]) {
         const uri = vscode.Uri.file(filePath);
         const coveredLineDecorationType = vscode.window.createTextEditorDecorationType({
-            backgroundColor: "rgb(227, 75, 46)",
+            backgroundColor: "rgba(246, 153, 92, 0.4)",
         });
         const decorations: vscode.DecorationOptions[] = [];
 
         vscode.window.showTextDocument(uri).then((editor) => {
-            coveredLines.forEach((lineNumber) => {
-                const line = editor.document.lineAt(lineNumber - 1);
+            coveredLines.forEach((line) => {
+                const startLine = editor.document.lineAt(line[0] - 1);
+                const endLine = editor.document.lineAt(line[2] - 1);
+
                 const decoration: vscode.DecorationOptions = {
-                    range: new vscode.Range(line.range.start, line.range.end),
+                    range: new vscode.Range(line[0] - 1, line[1] - 1, line[2] - 1, line[3] - 1),
                     hoverMessage: "This line is not covered by tests",
                 };
                 decorations.push(decoration);
@@ -76,46 +78,50 @@ export class CoverageGenerator {
     }
 
     // Function to parse Jest coverage report
-    public parseCoverageReport(filePath: string): { [key: string]: number[] } {
+    private parseCoverageReport(filePath: string): Map<string, number[][]> {
         const report = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-        const coverageData: { [key: string]: number[] } = {};
+        const coverageData = new Map<string, number[][]>();
 
         Object.keys(report).forEach((filename: string) => {
             const fileCoverage = report[filename];
-            let coveredLines: number[] = [];
+            let coveredLines: number[][] = [];
 
             coveredLines = [...coveredLines, ...this.getStatementCoverage(fileCoverage)];
             coveredLines = [...coveredLines, ...this.getBranchCoverage(fileCoverage)];
             coveredLines = [...coveredLines, ...this.getFunctionCoverage(fileCoverage)];
 
-            coverageData[`'${filename}'`] = coveredLines;
+            coverageData.set(filename, coveredLines);
         });
 
         return coverageData;
     }
 
-    private getStatementCoverage(fileCoverage: any): number[] {
-        const coveredLines: number[] = [];
+    private getStatementCoverage(fileCoverage: any): number[][] {
+        const coveredLines: number[][] = [];
         Object.keys(fileCoverage.statementMap).forEach((statementKey) => {
             const statementCoverage = fileCoverage.s[statementKey];
             if (statementCoverage !== undefined && statementCoverage == 0) {
-                const line = fileCoverage.statementMap[statementKey].start.line;
-                coveredLines.push(line);
+                const line = fileCoverage.statementMap[statementKey];
+                if (line) {
+                    coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
+                }
             }
         });
         return coveredLines;
     }
 
-    private getBranchCoverage(fileCoverage: any): number[] {
-        const coveredLines: number[] = [];
+    private getBranchCoverage(fileCoverage: any): number[][] {
+        const coveredLines: number[][] = [];
         Object.keys(fileCoverage.branchMap).forEach((branchKey) => {
             const branchCoverage = fileCoverage.b[branchKey];
             if (branchCoverage !== undefined) {
                 const branches = fileCoverage.branchMap[branchKey].locations;
-                branches.forEach((branch: { start: { line: any } }) => {
+                branches.forEach((branch: any) => {
                     if (branchCoverage[0] > 0 || branchCoverage[1] == 0) {
-                        const line = branch.start.line;
-                        coveredLines.push(line);
+                        const line = branch;
+                        if (this.isLineDataDefined(line)) {
+                            coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
+                        }
                     }
                 });
             }
@@ -123,15 +129,21 @@ export class CoverageGenerator {
         return coveredLines;
     }
 
-    private getFunctionCoverage(fileCoverage: any): number[] {
-        const coveredLines: number[] = [];
+    private getFunctionCoverage(fileCoverage: any): number[][] {
+        const coveredLines: number[][] = [];
         Object.keys(fileCoverage.fnMap).forEach((functionKey) => {
             const functionCoverage = fileCoverage.f[functionKey];
             if (functionCoverage !== undefined && functionCoverage == 0) {
-                const line = fileCoverage.fnMap[functionKey].loc.start.line;
-                coveredLines.push(line);
+                const line = fileCoverage.fnMap[functionKey].loc;
+                if (this.isLineDataDefined(line)) {
+                    coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
+                }
             }
         });
         return coveredLines;
+    }
+
+    private isLineDataDefined(line: any): boolean {
+        return line.start.line && line.start.column && line.end.line && line.end.column;
     }
 }
