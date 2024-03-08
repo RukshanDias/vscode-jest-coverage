@@ -37,9 +37,9 @@ export class FileMethodSelector {
             for (const file of this.filePaths) {
                 const fileExtension = file.split(".").pop();
                 const testFileFormat = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
-                let output_string = file.replace(new RegExp(`\\.${fileExtension}$`), testFileFormat);
-                if (Helper.isFileAvailable(output_string)) {
-                    testFilePaths.push(output_string);
+                let testFilePath = file.replace(new RegExp(`\\.${fileExtension}$`), testFileFormat);
+                if (Helper.isFileAvailable(testFilePath)) {
+                    testFilePaths.push(testFilePath);
                 } else {
                     testFilePaths.push("");
                 }
