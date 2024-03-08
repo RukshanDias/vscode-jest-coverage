@@ -9,10 +9,8 @@ export class Helper {
 
         try {
             fs.accessSync(uri, fs.constants.F_OK);
-            console.log(`${uri} exists`);
             return true;
         } catch (err) {
-            console.error(`${uri} does not exist`);
             return false;
         }
     }
@@ -68,5 +66,15 @@ export class Helper {
                 }
             });
         });
+    }
+
+    static async openFileInVscode(filePath: string): Promise<void> {
+        try {
+            const uri = vscode.Uri.file(filePath);
+            const document = await vscode.workspace.openTextDocument(uri);
+            await vscode.window.showTextDocument(document, { preview: false });
+        } catch (error) {
+            console.error("Error:", error);
+        }
     }
 }

@@ -32,7 +32,6 @@ export function activate(context: vscode.ExtensionContext) {
         if (filePaths) {
             for (const filePath of filePaths) {
                 vscode.window.showInformationMessage(filePath);
-                console.log(filePath);
             }
         }
         const editor = vscode.window.activeTextEditor;

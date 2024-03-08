@@ -15,16 +15,12 @@ export class CoverageGenerator {
             await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + "/coverage/coverage-final.json");
             vscode.window.showInformationMessage("view coverage");
 
-            // -----------
             let coverageFilePath = workspacePath + "/coverage/coverage-final.json";
             const coverageData = this.parseCoverageReport(coverageFilePath);
-            console.log(coverageData);
-            for (const i in filePaths) {
-                let notCoveredLines = coverageData.get("D:\\Jest_Demo\\js\\sum.js");
-                if (notCoveredLines) {
-                    this.highlightNotCoveredLines("D:\\Jest_Demo\\js\\sum.js", notCoveredLines);
-                }
-            }
+            coverageData.forEach((notCoveredLines: number[][], file: string) => {
+                this.highlightNotCoveredLines(file, notCoveredLines);
+                Helper.openFileInVscode(file);
+            });
         }
     }
 
