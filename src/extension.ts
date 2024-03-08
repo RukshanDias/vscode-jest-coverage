@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
 import { CoverageGenerator } from "./coverageGenerator";
+import { Helper } from "./helper";
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "jest-coverage" is now active!');
@@ -10,11 +11,17 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
+        if (Helper.isTestFileFormat(uris)) {
+            vscode.window.showInformationMessage("Select only file/s with your fix.");
+            return;
+        }
+
         if (uris.length == 1) {
             fileMethodSelector.setCoverageType("SingleFile");
         } else {
             fileMethodSelector.setCoverageType("MultiFile");
         }
+
         fileMethodSelector.getFilePath(uris);
         fileMethodSelector.captureTestFilePaths();
         let testFiles = fileMethodSelector.getTestFilePaths();

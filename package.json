@@ -12,6 +12,17 @@
     "activationEvents": [],
     "main": "./out/extension.js",
     "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "JestCoverage",
+            "properties": {
+                "JestCoverage.testFileFormat": {
+                    "type": "string",
+                    "default": ".spec.ts",
+                    "description": "File format of the test file"
+                }
+            }
+        },
         "commands": [
             {
                 "command": "jest-coverage.getFilePath",
@@ -34,22 +45,22 @@
             "explorer/context": [
                 {
                     "command": "jest-coverage.contextMenuFilePathOption",
-                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/",
+                    "when": "resourceFilename =~ /^.*\\.(js|ts)$/i",
                     "group": "navigation"
                 }
             ],
             "scm/resourceState/context": [
                 {
                     "command": "jest-coverage.sourceControlMenuFilePathOption",
-                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/",
+                    "when": "resourceFilename =~ /^.*\\.(js|ts)$/i",
                     "group": "navigation"
                 }
             ],
             "editor/context": [
                 {
                     "command": "jest-coverage.method",
-                    "when": "resourceFilename =~ /^(?!.*\\.test\\.js$).*$/ && editorHasSelection",
-                    "group": "markdown-preview-enhanced"
+                    "when": "resourceFilename =~ /^.*\\.(js|ts)$/i && editorHasSelection",
+                    "group": "navigation"
                 }
             ]
         }
