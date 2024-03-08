@@ -19,6 +19,7 @@ export class CoverageGenerator {
             const coverageData = this.parseCoverageReport(coverageFilePath);
             coverageData.forEach((notCoveredLines: number[][], file: string) => {
                 this.highlightNotCoveredLines(file, notCoveredLines);
+                Helper.openFileInVscode(file);
             });
         }
     }
