@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        if (uris.length == 1) {
+        if (uris.length === 1) {
             fileMethodSelector.setCoverageType("SingleFile");
         } else {
             fileMethodSelector.setCoverageType("MultiFile");
