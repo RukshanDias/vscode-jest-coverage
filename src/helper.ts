@@ -77,4 +77,14 @@ export class Helper {
             console.error("Error:", error);
         }
     }
+
+    static isTestFileFormat(files: vscode.Uri[]): boolean {
+        const testFilePattern = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
+        for (const uri of files) {
+            if (uri.path.endsWith(testFilePattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

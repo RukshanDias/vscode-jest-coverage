@@ -35,9 +35,11 @@ export class FileMethodSelector {
         const testFilePaths: string[] = [];
         if (this.filePaths) {
             for (const file of this.filePaths) {
-                let output_string = file.replace(/\.js$/, ".test.js");
-                if (Helper.isFileAvailable(output_string)) {
-                    testFilePaths.push(output_string);
+                const fileExtension = file.split(".").pop();
+                const testFileFormat = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
+                let testFilePath = file.replace(new RegExp(`\\.${fileExtension}$`), testFileFormat);
+                if (Helper.isFileAvailable(testFilePath)) {
+                    testFilePaths.push(testFilePath);
                 } else {
                     testFilePaths.push("");
                 }

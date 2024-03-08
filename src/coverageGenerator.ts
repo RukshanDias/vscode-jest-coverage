@@ -96,7 +96,7 @@ export class CoverageGenerator {
         const coveredLines: number[][] = [];
         Object.keys(fileCoverage.statementMap).forEach((statementKey) => {
             const statementCoverage = fileCoverage.s[statementKey];
-            if (statementCoverage !== undefined && statementCoverage == 0) {
+            if (statementCoverage !== undefined && statementCoverage === 0) {
                 const line = fileCoverage.statementMap[statementKey];
                 if (line) {
                     coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
@@ -113,7 +113,7 @@ export class CoverageGenerator {
             if (branchCoverage !== undefined) {
                 const branches = fileCoverage.branchMap[branchKey].locations;
                 branches.forEach((branch: any) => {
-                    if (branchCoverage[0] > 0 || branchCoverage[1] == 0) {
+                    if (branchCoverage[0] > 0 || branchCoverage[1] === 0) {
                         const line = branch;
                         if (this.isLineDataDefined(line)) {
                             coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
@@ -129,7 +129,7 @@ export class CoverageGenerator {
         const coveredLines: number[][] = [];
         Object.keys(fileCoverage.fnMap).forEach((functionKey) => {
             const functionCoverage = fileCoverage.f[functionKey];
-            if (functionCoverage !== undefined && functionCoverage == 0) {
+            if (functionCoverage !== undefined && functionCoverage === 0) {
                 const line = fileCoverage.fnMap[functionKey].loc;
                 if (this.isLineDataDefined(line)) {
                     coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
