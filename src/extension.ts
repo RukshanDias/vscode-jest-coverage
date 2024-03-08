@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
         if (Helper.isTestFileFormat(uris)) {
-            vscode.window.showInformationMessage("Select only file/s with your fix.");
+            vscode.window.showInformationMessage("Select file/s with your fix.");
             return;
         }
 
