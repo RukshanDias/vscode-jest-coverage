@@ -6,11 +6,11 @@ import { workspacePath } from "./fileMethodSelector";
 export class CoverageGenerator {
     private decorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> = new Map();
 
-    public async generateCoverage(testFilePaths: string[], filePaths: string[]): Promise<void> {
+    public async generateCoverage(testFilePaths: string[], fixFilePaths: string[]): Promise<void> {
         let relativeTestFilePaths = Helper.convertPathToRelative(testFilePaths);
-        let relativeFilePaths = Helper.convertPathToRelative(filePaths);
+        let relativeFixFilePaths = Helper.convertPathToRelative(fixFilePaths);
 
-        let command = this.generateCommand(relativeTestFilePaths, relativeFilePaths);
+        let command = this.generateCommand(relativeTestFilePaths, relativeFixFilePaths);
         if (command && workspacePath) {
             await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + "/coverage/coverage-final.json");
             vscode.window.showInformationMessage("view coverage");
@@ -24,15 +24,15 @@ export class CoverageGenerator {
         }
     }
 
-    private generateCommand(filePaths: string[], testFilePaths: string[]): string {
-        const testFilesStr = JSON.stringify(testFilePaths);
-        const coverageFilesStr = filePaths.join(" ");
+    private generateCommand(testFilePaths: string[], fixFilePaths: string[]): string {
+        const testFilesStr = JSON.stringify(fixFilePaths);
+        const coverageFilesStr = testFilePaths.join(" ");
 
         let command = `npm test ${coverageFilesStr} -- --coverage --collectCoverageFrom='${testFilesStr}'`;
         return Helper.convertPathToUnix(command);
     }
 
-    public highlightNotCoveredLines(filePath: string, coveredLines: number[][]) {
+    private highlightNotCoveredLines(filePath: string, coveredLines: number[][]) {
         const uri = vscode.Uri.file(filePath);
         const coveredLineDecorationType = vscode.window.createTextEditorDecorationType({
             backgroundColor: "rgba(246, 153, 92, 0.4)",
@@ -66,10 +66,14 @@ export class CoverageGenerator {
     }
 
     // Function to remove decorations when file is closed
-    public removeDecorations(filePath: string) {
-        const decorations = this.decorationsMap.get(filePath);
-        if (decorations) {
-            this.decorationsMap.delete(filePath);
+    public removeDecorations(filePath?: string) {
+        if (!filePath) {
+            this.decorationsMap.clear();
+        } else {
+            const decorations = this.decorationsMap.get(filePath);
+            if (decorations) {
+                this.decorationsMap.delete(filePath);
+            }
         }
     }
 
