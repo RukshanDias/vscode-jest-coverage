@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
+import { FileMethodSelector } from "./fileMethodSelector";
 import { CoverageGenerator } from "./coverageGenerator";
 import { Helper } from "./helper";
 
@@ -11,10 +11,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
-        if (Helper.isTestFileFormat(uris)) {
-            vscode.window.showInformationMessage("Select file/s with your fix.");
+        if (!Helper.haveTestFileFormat(uris)) {
+            vscode.window.showInformationMessage("Pls select your test file!");
             return;
         }
+
+        // clear previous data
+        fileMethodSelector.clear();
+        coverageGenerator.removeDecorations();
 
         if (uris.length === 1) {
             fileMethodSelector.setCoverageType("SingleFile");
@@ -22,20 +26,20 @@ export function activate(context: vscode.ExtensionContext) {
             fileMethodSelector.setCoverageType("MultiFile");
         }
 
-        fileMethodSelector.getFilePath(uris);
-        fileMethodSelector.captureTestFilePaths();
+        fileMethodSelector.captureTestFilePaths(uris);
+        fileMethodSelector.captureFixFilePaths();
         let testFiles = fileMethodSelector.getTestFilePaths();
-        let files = fileMethodSelector.getFilePaths();
-        if (testFiles && files) {
-            coverageGenerator.generateCoverage(testFiles, files);
+        let fixFiles = fileMethodSelector.getFixFilePaths();
+        if (testFiles && fixFiles) {
+            coverageGenerator.generateCoverage(testFiles, fixFiles);
         }
     });
 
     // Register the command for code selection
     let disposableMethodSelection = vscode.commands.registerCommand("jest-coverage.method", (uri: vscode.Uri) => {
         fileMethodSelector.setCoverageType("CodeSelection");
-        fileMethodSelector.getFilePath([uri]);
-        let filePaths = fileMethodSelector.getFilePaths();
+        fileMethodSelector.captureTestFilePaths([uri]);
+        let filePaths = fileMethodSelector.getFixFilePaths();
         if (filePaths) {
             for (const filePath of filePaths) {
                 vscode.window.showInformationMessage(filePath);

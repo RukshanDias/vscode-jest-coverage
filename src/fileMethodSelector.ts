@@ -2,12 +2,12 @@ import * as vscode from "vscode";
 import { Helper } from "./helper";
 
 export class FileMethodSelector {
-    private filePaths: string[] | undefined;
+    private fixFilePaths: string[] | undefined;
     private testFilePaths: string[] | undefined;
     private selectionRange: SelectionRange | undefined;
     private type: CoverageType | undefined;
 
-    public getFilePath(uris: vscode.Uri[]): void {
+    public captureTestFilePaths(uris: vscode.Uri[]): void {
         const filePaths: string[] = [];
         for (const uri of uris) {
             if (uri && uri.scheme === "file") {
@@ -17,7 +17,7 @@ export class FileMethodSelector {
                 return undefined;
             }
         }
-        this.filePaths = filePaths;
+        this.testFilePaths = filePaths;
     }
 
     public captureSelectionRange(editor: vscode.TextEditor): void {
@@ -31,26 +31,26 @@ export class FileMethodSelector {
         this.selectionRange = range;
     }
 
-    public captureTestFilePaths(): void {
-        const testFilePaths: string[] = [];
-        if (this.filePaths) {
-            for (const file of this.filePaths) {
+    public captureFixFilePaths(): void {
+        const capturedFixFilePaths: string[] = [];
+        if (this.testFilePaths) {
+            for (const file of this.testFilePaths) {
                 const fileExtension = file.split(".").pop();
                 const testFileFormat = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
-                let testFilePath = file.replace(new RegExp(`\\.${fileExtension}$`), testFileFormat);
+                let testFilePath = file.replace(new RegExp(`${testFileFormat}$`), "." + fileExtension);
                 if (Helper.isFileAvailable(testFilePath)) {
-                    testFilePaths.push(testFilePath);
+                    capturedFixFilePaths.push(testFilePath);
                 } else {
-                    testFilePaths.push("");
+                    capturedFixFilePaths.push("");
                 }
             }
-            this.testFilePaths = testFilePaths;
+            this.fixFilePaths = capturedFixFilePaths;
         }
     }
 
     public clear(): void {
-        this.filePaths = undefined;
         this.testFilePaths = undefined;
+        this.fixFilePaths = undefined;
         this.selectionRange = undefined;
         this.type = undefined;
     }
@@ -59,12 +59,12 @@ export class FileMethodSelector {
         this.type = type;
     }
 
-    public getFilePaths(): string[] | undefined {
-        return this.filePaths;
-    }
-
     public getTestFilePaths(): string[] | undefined {
         return this.testFilePaths;
+    }
+
+    public getFixFilePaths(): string[] | undefined {
+        return this.fixFilePaths;
     }
 
     public getSelectionRange(): SelectionRange | undefined {
