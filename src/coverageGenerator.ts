@@ -5,6 +5,7 @@ import { workspacePath } from "./fileMethodSelector";
 
 export class CoverageGenerator {
     private decorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> = new Map();
+    private coverageViewOption: string[] = ["Code inline format", "View coverage report"];
 
     public async generateCoverage(testFilePaths: string[], fixFilePaths: string[]): Promise<void> {
         let relativeTestFilePaths = Helper.convertPathToRelative(testFilePaths);
@@ -15,12 +16,29 @@ export class CoverageGenerator {
             await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + "/coverage/coverage-final.json");
             vscode.window.showInformationMessage("view coverage");
 
-            let coverageFilePath = workspacePath + "/coverage/coverage-final.json";
-            const coverageData = this.parseCoverageReport(coverageFilePath);
-            coverageData.forEach((notCoveredLines: number[][], file: string) => {
-                this.highlightNotCoveredLines(file, notCoveredLines);
-                Helper.openFileInVscode(file);
-            });
+            // Retrieve the selected value of Coverage View setting
+            const selectedOptionIndex = this.coverageViewOption.findIndex(
+                (option) => option === vscode.workspace.getConfiguration().get("JestCoverage.coverageViewOption")
+            );
+
+            if (selectedOptionIndex == 0) {
+                // code inline
+                let coverageFilePath = workspacePath + "/coverage/coverage-final.json";
+                const coverageData = this.parseCoverageReport(coverageFilePath);
+                coverageData.forEach((notCoveredLines: number[][], file: string) => {
+                    this.highlightNotCoveredLines(file, notCoveredLines);
+                    Helper.openFileInVscode(file);
+                });
+            } else if (selectedOptionIndex == 1) {
+                // view coverage report
+                fixFilePaths.forEach((filePath: string) => {
+                    const fileName = filePath.split("\\").pop();
+                    let coverageFilePath = workspacePath + "/coverage/lcov-report/" + fileName + ".html";
+                    if (Helper.isFileAvailable(coverageFilePath)) {
+                        vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
+                    }
+                });
+            }
         }
     }
 
