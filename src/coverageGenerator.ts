@@ -5,7 +5,7 @@ import { workspacePath } from "./fileMethodSelector";
 
 export class CoverageGenerator {
     private decorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> = new Map();
-    private coverageViewOption: string[] = ["Code inline format", "View coverage report"];
+    private coverageViewOption: string[] = ["Code inline format", "View coverage report in browser"];
 
     public async generateCoverage(testFilePaths: string[], fixFilePaths: string[]): Promise<void> {
         let relativeTestFilePaths = Helper.convertPathToRelative(testFilePaths);
@@ -30,7 +30,7 @@ export class CoverageGenerator {
                     Helper.openFileInVscode(file);
                 });
             } else if (selectedOptionIndex == 1) {
-                // view coverage report
+                // View coverage report in browser
                 fixFilePaths.forEach((filePath: string) => {
                     const fileName = filePath.split("\\").pop();
                     let coverageFilePath = workspacePath + "/coverage/lcov-report/" + fileName + ".html";
