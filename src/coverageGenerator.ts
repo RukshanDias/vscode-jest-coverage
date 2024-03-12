@@ -34,10 +34,13 @@ export class CoverageGenerator {
                 // View coverage report in browser
                 fixFilePaths.forEach((filePath: string) => {
                     const fileName = filePath.split("\\").pop();
-                    const coverageDirectoryPath = coverageJsonFilePath.substring(0, coverageJsonFilePath.indexOf("/coverage") + 8);
-                    let coverageFilePath = workspacePath + coverageDirectoryPath + "/lcov-report/" + fileName + ".html";
-                    if (Helper.isFileAvailable(coverageFilePath)) {
-                        vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
+                    let coverageFilePath = "";
+                    const match = coverageJsonFilePath.match(/^(.*?\/coverage)/);
+                    if (match && match[1]) {
+                        coverageFilePath = workspacePath + match[1] + "/lcov-report/" + fileName + ".html";
+                        if (Helper.isFileAvailable(coverageFilePath)) {
+                            vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
+                        }
                     }
                 });
             }

@@ -35,7 +35,7 @@ export class Helper {
     }
     static executeCommandInTerminal(command: string): Promise<void> {
         return new Promise((resolve) => {
-            const terminal: vscode.Terminal = vscode.window.createTerminal("My Terminal");
+            const terminal: vscode.Terminal = vscode.window.createTerminal("Jest Coverage");
             terminal.sendText(command);
             terminal.show();
             resolve();
