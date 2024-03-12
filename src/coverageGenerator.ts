@@ -35,9 +35,9 @@ export class CoverageGenerator {
                 fixFilePaths.forEach((filePath: string) => {
                     const fileName = filePath.split("\\").pop();
                     let coverageFilePath = "";
-                    const match = coverageJsonFilePath.match(/^(.*?\/coverage)/);
+                    const match = coverageJsonFilePath.match(/^(.*\/).*coverage-final\.json$/);
                     if (match && match[1]) {
-                        coverageFilePath = workspacePath + match[1] + "/lcov-report/" + fileName + ".html";
+                        coverageFilePath = workspacePath + match[1] + "lcov-report/" + fileName + ".html";
                         if (Helper.isFileAvailable(coverageFilePath)) {
                             vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
                         }
