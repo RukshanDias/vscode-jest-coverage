@@ -4,8 +4,6 @@ import { CoverageGenerator } from "./coverageGenerator";
 import { Helper } from "./helper";
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Congratulations, your extension "jest-coverage" is now active!');
-
     let fileMethodSelector = new FileMethodSelector();
     let coverageGenerator = new CoverageGenerator();
 

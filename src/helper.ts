@@ -27,11 +27,8 @@ export class Helper {
     static async generateCoverageReport(command: string, coverageFilePath: string): Promise<void> {
         try {
             await this.deleteFile(coverageFilePath);
-            console.log(`Deleted ${coverageFilePath}. Running coverage command...`);
             await this.executeCommandInTerminal(command);
-            console.log("Coverage command completed.");
             const regeneratedFile = await this.watchFile(coverageFilePath);
-            console.log(`${regeneratedFile} has been regenerated. Completed.`);
         } catch (err) {
             console.error("Error:", err);
         }
