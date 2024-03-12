@@ -14,6 +14,13 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
+        // Kill previous terminal
+        vscode.window.terminals.forEach((terminal: vscode.Terminal) => {
+            if (terminal.name === "Jest Coverage") {
+                terminal.dispose();
+            }
+        });
+
         // clear previous data
         fileMethodSelector.clear();
         coverageGenerator.removeDecorations();
