@@ -6,7 +6,7 @@
     "publisher": "RukshanDias",
     "icon": "imgs/icon.png",
     "engines": {
-        "vscode": "^1.87.0"
+        "vscode": "^1.85.0"
     },
     "repository": {
         "type": "git",
@@ -27,7 +27,7 @@
     "contributes": {
         "configuration": {
             "type": "object",
-            "title": "JestCoverage",
+            "title": "JestQuickCoverage",
             "properties": {
                 "JestCoverage.testFileFormat": {
                     "type": "string",
