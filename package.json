@@ -42,6 +42,11 @@
                         "Code inline format",
                         "View coverage report in browser"
                     ]
+                },
+                "JestCoverage.coverageJsonFilePath": {
+                    "type": "string",
+                    "default": "/coverage/jest/coverage-final.json",
+                    "description": "Relative path of coverage-final.json"
                 }
             }
         },

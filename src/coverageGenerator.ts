@@ -13,7 +13,8 @@ export class CoverageGenerator {
 
         let command = this.generateCommand(relativeTestFilePaths, relativeFixFilePaths);
         if (command && workspacePath) {
-            await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + "/coverage/coverage-final.json");
+            const coverageJsonFilePath = vscode.workspace.getConfiguration("JestCoverage").get<string>("coverageJsonFilePath", "");
+            await Helper.generateCoverageReport(command, Helper.convertPathToUnix(workspacePath) + coverageJsonFilePath);
             vscode.window.showInformationMessage("view coverage");
 
             // Retrieve the selected value of Coverage View setting
