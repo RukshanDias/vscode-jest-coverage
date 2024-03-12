@@ -24,7 +24,7 @@ export class CoverageGenerator {
 
             if (selectedOptionIndex == 0) {
                 // code inline
-                let coverageFilePath = workspacePath + "/coverage/coverage-final.json";
+                let coverageFilePath = workspacePath + coverageJsonFilePath;
                 const coverageData = this.parseCoverageReport(coverageFilePath);
                 coverageData.forEach((notCoveredLines: number[][], file: string) => {
                     this.highlightNotCoveredLines(file, notCoveredLines);
@@ -34,7 +34,8 @@ export class CoverageGenerator {
                 // View coverage report in browser
                 fixFilePaths.forEach((filePath: string) => {
                     const fileName = filePath.split("\\").pop();
-                    let coverageFilePath = workspacePath + "/coverage/lcov-report/" + fileName + ".html";
+                    const coverageDirectoryPath = coverageJsonFilePath.substring(0, coverageJsonFilePath.indexOf("/coverage") + 8);
+                    let coverageFilePath = workspacePath + coverageDirectoryPath + "/lcov-report/" + fileName + ".html";
                     if (Helper.isFileAvailable(coverageFilePath)) {
                         vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
                     }
