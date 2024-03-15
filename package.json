@@ -47,6 +47,11 @@
                     "type": "string",
                     "default": "/coverage/jest/coverage-final.json",
                     "description": "Relative path of coverage-final.json"
+                },
+                "JestCoverage.gitBashPath": {
+                    "type": "string",
+                    "default": "C:/Program Files/Git/bin/bash.exe",
+                    "description": "Git Bash path as per your installation"
                 }
             }
         },
