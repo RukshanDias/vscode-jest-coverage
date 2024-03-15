@@ -32,17 +32,20 @@ export class CoverageGenerator {
                 });
             } else if (selectedOptionIndex == 1) {
                 // View coverage report in browser
-                fixFilePaths.forEach((filePath: string) => {
-                    const fileName = filePath.split("\\").pop();
+                for (let i in fixFilePaths) {
+                    const fileName = fixFilePaths[i].split("\\").pop();
                     let coverageFilePath = "";
                     const match = coverageJsonFilePath.match(/^(.*\/).*coverage-final\.json$/);
                     if (match && match[1]) {
                         coverageFilePath = workspacePath + match[1] + "lcov-report/" + fileName + ".html";
                         if (Helper.isFileAvailable(coverageFilePath)) {
                             vscode.env.openExternal(vscode.Uri.file(coverageFilePath));
+                        } else {
+                            vscode.env.openExternal(vscode.Uri.file(workspacePath + match[1] + "lcov-report/index.html"));
+                            break;
                         }
                     }
-                });
+                }
             }
         }
     }
