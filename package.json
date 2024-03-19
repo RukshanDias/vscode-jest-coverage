@@ -2,7 +2,7 @@
     "name": "jest-coverage",
     "displayName": "Jest Quick Coverage",
     "description": " An extension designed to streamline the process of generating and capturing test coverage for JavaScript projects that use Jest.",
-    "version": "0.0.72",
+    "version": "1.0.0",
     "publisher": "RukshanDias",
     "icon": "imgs/icon.png",
     "engines": {
