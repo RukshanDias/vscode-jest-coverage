@@ -6,30 +6,32 @@ The Jest Quick Coverage is a Visual Studio Code extension designed to streamline
 
 ![extension workflow](imgs/jestQuickCoverage.gif)
 
+## Usage
+
+1. In Extension settings setup the settings accordingly (check 'Extension Settings' section).
+2. Select the desired **test file** in the Explorer sidebar.
+    - Can select a **single** test file or **multiple** test files.
+3. Right-click on the selection and select the "Get Coverage" option.
+4. The extension will trigger Jest to generate the coverage report and mark uncovered lines within the editor or open coverage report based on your preference.
+
 ## Features
 
 -   **Selective Coverage**: Easily generate test coverage reports for selected file or files using Jest.
 -   **Visual Feedback**: Uncovered lines are marked within the VS Code editor for quick identification and remediation.
 -   **Streamlined Workflow**: Simplifies the process of analyzing and improving test coverage within your project.
 
-## Usage
-
-1. In settings setup the test file format you're using.
-2. Select the desired file or multiple files in the Explorer sidebar.
-3. Right-click on the selection and choose the "Get Coverage" option from the context menu.
-4. The extension will trigger Jest to generate the coverage report and mark uncovered lines within the editor or open coverage report based on your preference.
-
 ## Requirements
 
 -   Visual Studio Code
 -   Jest installed and configured in your project
+-   GitBash terminal
 
 ## Extension Settings
 
--   Setup path of coverage-final.json.
--   Coverage view option, inline in vscode or in browser.
+-   Setup relative path of coverage-final.json.
+-   Coverage view option, inline in vscode or in browser(recommended).
 -   Git Bash path.
--   Option to setup the test file format. Default is .spec.ts.
+-   The test file format. Default is .spec.ts.
 
 ![extension settings](imgs/jestQuickCoverage-settings.png)
 
