@@ -36,12 +36,21 @@ export class Helper {
     static executeCommandInTerminal(command: string): Promise<void> {
         return new Promise((resolve) => {
             const gitBashPath = vscode.workspace.getConfiguration("JestCoverage").get<string>("gitBashPath", "");
-            const gitBashTerminal: vscode.TerminalOptions = {
+            const bashPath = "/bin/bash";
+            let terminalPath: string | undefined = undefined;
+
+            if (this.isFileAvailable(gitBashPath)) {
+                terminalPath = gitBashPath;
+            } else if (this.isFileAvailable(bashPath)) {
+                terminalPath = bashPath;
+            }
+
+            const terminalOption: vscode.TerminalOptions = {
                 name: "Jest Coverage",
-                shellPath: gitBashPath,
+                shellPath: terminalPath,
             };
 
-            const terminal: vscode.Terminal = vscode.window.createTerminal(gitBashTerminal);
+            const terminal: vscode.Terminal = vscode.window.createTerminal(terminalOption);
             terminal.sendText(command);
             terminal.show();
             resolve();
