@@ -71,8 +71,8 @@ export class CoverageGenerator {
                 const endLine = editor.document.lineAt(line[2] - 1);
 
                 const decoration: vscode.DecorationOptions = {
-                    range: new vscode.Range(line[0] - 1, line[1] - 1, line[2] - 1, line[3] - 1),
-                    hoverMessage: "This line is not covered by tests",
+                    range: new vscode.Range(line[0] - 1, line[1] + 1, line[2] - 1, line[3] - 1),
+                    hoverMessage: "Not covered by tests",
                 };
                 decorations.push(decoration);
             });
@@ -129,7 +129,7 @@ export class CoverageGenerator {
             if (statementCoverage !== undefined && statementCoverage === 0) {
                 const line = fileCoverage.statementMap[statementKey];
                 if (line) {
-                    coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
+                    coveredLines.push(this.parseLineData(line));
                 }
             }
         });
@@ -145,9 +145,7 @@ export class CoverageGenerator {
                 branches.forEach((branch: any) => {
                     if (branchCoverage[0] > 0 || branchCoverage[1] === 0) {
                         const line = branch;
-                        if (this.isLineDataDefined(line)) {
-                            coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
-                        }
+                        coveredLines.push(this.parseLineData(line));
                     }
                 });
             }
@@ -161,15 +159,17 @@ export class CoverageGenerator {
             const functionCoverage = fileCoverage.f[functionKey];
             if (functionCoverage !== undefined && functionCoverage === 0) {
                 const line = fileCoverage.fnMap[functionKey].loc;
-                if (this.isLineDataDefined(line)) {
-                    coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
-                }
+                coveredLines.push(this.parseLineData(line));
             }
         });
         return coveredLines;
     }
 
-    private isLineDataDefined(line: any): boolean {
-        return line.start.line && line.start.column && line.end.line && line.end.column;
+    private parseLineData(line: any): number[] {
+        let startLine: number = line.start.line !== null ? line.start.line : 0;
+        let startCol: number = line.start.column !== null ? line.start.column : 0;
+        let endLine: number = line.end.line !== null ? line.end.line : 0;
+        let endCol: number = line.end.column !== null ? line.end.column : startCol + 1;
+        return [startLine, startCol, endLine, endCol];
     }
 }
