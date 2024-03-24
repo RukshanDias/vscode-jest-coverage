@@ -129,7 +129,7 @@ export class CoverageGenerator {
             if (statementCoverage !== undefined && statementCoverage === 0) {
                 const line = fileCoverage.statementMap[statementKey];
                 if (line) {
-                    coveredLines.push([line.start.line, line.start.column, line.end.line, line.end.column]);
+                    coveredLines.push(this.parseLineData(line));
                 }
             }
         });
