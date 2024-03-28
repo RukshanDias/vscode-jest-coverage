@@ -25,6 +25,7 @@ export class FileMethodSelector {
         const startLine = selection.start.line + 1;
         const endLine = selection.end.line + 1;
         const range: SelectionRange = {
+            filePath: editor.document.uri.fsPath,
             start: startLine,
             end: endLine,
         };
@@ -45,6 +46,18 @@ export class FileMethodSelector {
                 }
             }
             this.fixFilePaths = capturedFixFilePaths;
+        }
+    }
+
+    public captureTestFileFromFixFile(uri: vscode.Uri): void {
+        const file = uri.fsPath;
+        const fileExtension = file.split(".").pop();
+        const testFileFormat = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
+        let testFilePath = file.replace("." + fileExtension, testFileFormat);
+        if (Helper.isFileAvailable(testFilePath)) {
+            this.testFilePaths = [testFilePath];
+        } else {
+            vscode.window.showInformationMessage("No test file created for this file.");
         }
     }
 
@@ -77,6 +90,7 @@ export class FileMethodSelector {
 }
 
 export type SelectionRange = {
+    filePath: string;
     start: number;
     end: number;
 };
