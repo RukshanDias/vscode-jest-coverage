@@ -24,10 +24,15 @@ export class Helper {
         return relativePaths;
     }
 
-    static async generateCoverageReport(command: string, coverageFilePath: string): Promise<void> {
+    static async generateCoverageReport(command: string, coverageFilePath: string, testFilePaths: string[]): Promise<void> {
         try {
             await this.deleteFile(coverageFilePath);
             await this.executeCommandInTerminal(command);
+            let message: string = "";
+            for (let i = 0; i < testFilePaths.length; i++) {
+                message += ` -${i + 1}. ${testFilePaths[i]} `;
+            }
+            vscode.window.showInformationMessage("Generating coverage..." + message);
             const regeneratedFile = await this.watchFile(coverageFilePath);
         } catch (err) {
             console.error("Error:", err);

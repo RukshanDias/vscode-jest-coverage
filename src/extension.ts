@@ -14,16 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Kill previous terminal
-        vscode.window.terminals.forEach((terminal: vscode.Terminal) => {
-            if (terminal.name === "Jest Coverage") {
-                terminal.dispose();
-            }
-        });
-
-        // clear previous data
-        fileMethodSelector.clear();
-        coverageGenerator.removeDecorations();
+        clearPreviousData();
 
         if (uris.length === 1) {
             fileMethodSelector.setCoverageType("SingleFile");
@@ -42,19 +33,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the command for code selection
     let disposableMethodSelection = vscode.commands.registerCommand("jest-coverage.method", (uri: vscode.Uri) => {
-        fileMethodSelector.setCoverageType("CodeSelection");
-        fileMethodSelector.captureTestFilePaths([uri]);
-        let filePaths = fileMethodSelector.getFixFilePaths();
-        if (filePaths) {
-            for (const filePath of filePaths) {
-                vscode.window.showInformationMessage(filePath);
-            }
+        if (Helper.haveTestFileFormat([uri])) {
+            vscode.window.showInformationMessage("Pls make selection your fix file!");
+            return;
         }
+        clearPreviousData();
+
+        fileMethodSelector.setCoverageType("CodeSelection");
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             fileMethodSelector.captureSelectionRange(editor);
+            fileMethodSelector.captureTestFileFromFixFile(editor.document.uri);
+            fileMethodSelector.captureFixFilePaths();
+
+            let testFiles = fileMethodSelector.getTestFilePaths();
+            let fixFiles = fileMethodSelector.getFixFilePaths();
             let selection = fileMethodSelector.getSelectionRange();
-            vscode.window.showInformationMessage(`Selected lines: ${selection?.start} to ${selection?.end}`);
+            if (testFiles && fixFiles) {
+                coverageGenerator.generateCoverage(testFiles, fixFiles, selection);
+            }
         } else {
             vscode.window.showErrorMessage("No file is opened.");
         }
@@ -62,6 +59,18 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(disposableFileSelection);
     context.subscriptions.push(disposableMethodSelection);
+
+    // --------------------------- pre-process -----------------------
+    function clearPreviousData() {
+        // Kill previous terminal
+        vscode.window.terminals.forEach((terminal: vscode.Terminal) => {
+            if (terminal.name === "Jest Coverage") {
+                terminal.dispose();
+            }
+        });
+        fileMethodSelector.clear();
+        coverageGenerator.removeDecorations();
+    }
 
     // ----------------------------- Event Listeners ---------------------------------------
     // Event listener for context menu
