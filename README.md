@@ -4,7 +4,11 @@
 
 The Jest Quick Coverage is a Visual Studio Code extension designed to streamline the process of generating and capturing test coverage for JavaScript related projects that use Jest as their testing framework. This extension allows developers to select specific test file/s and generate coverage reports, highlighting uncovered lines directly within the VS Code editor for convenient reference and modification.
 
-![extension workflow](imgs/jestQuickCoverage.gif)
+_> Test coverage by selecting file_
+![extension workflow for file selection](imgs/jestQuickCoverage.gif)
+
+_> Test coverage from code selection_
+![extension workflow for code selection](imgs/selection_coverage.gif)
 
 ## Usage
 
