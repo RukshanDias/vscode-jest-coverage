@@ -8,7 +8,7 @@ enum commandType {
 const clearCommand: vscode.Command = {
     title: "Clear",
     command: "jest-coverage.codelens.clear",
-    tooltip: "Tooltip provided by sample extension",
+    tooltip: "Clear highlights on editor",
 };
 
 function setupCommand(codeLensObj: vscode.CodeLens, command: commandType): vscode.CodeLens {
@@ -40,7 +40,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     }
 
     public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-        console.log("hiii");
+        console.log("code lense");
         this.codeLenses = [];
         if (this.isCorrectDocument(document) && this.isVisible) {
             console.log("in");
@@ -49,9 +49,9 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             const range = document.lineAt(line - 1).range;
 
             // CodeLens clear command
-            let codeLens1 = new vscode.CodeLens(range);
-            setupCommand(codeLens1, commandType.Clear);
-            this.codeLenses.push(codeLens1);
+            let codeLensClearCmd = new vscode.CodeLens(range);
+            setupCommand(codeLensClearCmd, commandType.Clear);
+            this.codeLenses.push(codeLensClearCmd);
         }
         return this.codeLenses;
     }

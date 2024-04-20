@@ -70,7 +70,7 @@
             },
             {
                 "command": "jest-coverage.codelens.clear",
-                "title": "Get coverage for selection"
+                "title": "Clear highlights on editor"
             }
         ],
         "menus": {
