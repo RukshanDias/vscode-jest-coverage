@@ -88,9 +88,7 @@ export class CoverageGenerator {
 
     private highlightNotCoveredLines(filePath: string, coveredLines: number[][]) {
         const uri = vscode.Uri.file(filePath);
-        const coveredLineDecorationType = vscode.window.createTextEditorDecorationType({
-            backgroundColor: "rgba(246, 153, 92, 0.4)",
-        });
+        const coveredLineDecorationType = this.uncoveredDecorationType();
         const decorations: vscode.DecorationOptions[] = [];
         let message: string;
         vscode.window.showTextDocument(uri).then((editor) => {
@@ -111,6 +109,13 @@ export class CoverageGenerator {
             editor.setDecorations(coveredLineDecorationType, decorations);
             this.decorationsMap.set(editor.document.uri.fsPath, { decorationType: coveredLineDecorationType, decorations: decorations });
         });
+    }
+
+    private uncoveredDecorationType(): vscode.TextEditorDecorationType {
+        const coveredLineDecorationType = vscode.window.createTextEditorDecorationType({
+            backgroundColor: "rgba(246, 153, 92, 0.4)",
+        });
+        return coveredLineDecorationType;
     }
 
     private inlineCoverageView(coverageJsonFilePath: string, selectionRange?: SelectionRange): void {

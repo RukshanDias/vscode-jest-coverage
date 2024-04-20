@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { FileMethodSelector } from "./fileMethodSelector";
+import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
 import { CoverageGenerator } from "./coverageGenerator";
 import { Helper } from "./helper";
+import { CodelensProvider } from "./codeLensProvider";
 
 export function activate(context: vscode.ExtensionContext) {
     let fileMethodSelector = new FileMethodSelector();
@@ -51,6 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
             let selection = fileMethodSelector.getSelectionRange();
             if (testFiles && fixFiles) {
                 coverageGenerator.generateCoverage(testFiles, fixFiles, selection);
+                codelensProvider.setVisibility(true);
             }
         } else {
             vscode.window.showErrorMessage("No file is opened.");
@@ -71,6 +73,22 @@ export function activate(context: vscode.ExtensionContext) {
         fileMethodSelector.clear();
         coverageGenerator.removeDecorations();
     }
+
+    // ---------------------- Declaring CodeLens Provider & commands ---------------
+    const codelensProvider = new CodelensProvider(fileMethodSelector);
+    vscode.languages.registerCodeLensProvider("*", codelensProvider);
+
+    vscode.commands.registerCommand("jest-coverage.codelens.clear", () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            console.log("clear");
+            codelensProvider.setVisibility(false);
+            coverageGenerator.removeDecorations(editor.document.uri.fsPath);
+
+            vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+            Helper.openFileInVscode(editor.document.uri.fsPath);
+        }
+    });
 
     // ----------------------------- Event Listeners ---------------------------------------
     // Event listener for context menu

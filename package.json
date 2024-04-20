@@ -67,6 +67,10 @@
             {
                 "command": "jest-coverage.method",
                 "title": "Get coverage for selection"
+            },
+            {
+                "command": "jest-coverage.codelens.clear",
+                "title": "Clear highlights on editor"
             }
         ],
         "menus": {
@@ -91,7 +95,10 @@
                     "group": "navigation"
                 }
             ]
-        }
+        },
+        "activationEvents": [
+            "*"
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
