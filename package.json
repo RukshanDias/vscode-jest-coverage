@@ -75,6 +75,10 @@
             {
                 "command": "jest-coverage.codelens.browserView",
                 "title": "View report in browser"
+            },
+            {
+                "command": "jest-coverage.codelens.rerun",
+                "title": "Re-generate test coverage"
             }
         ],
         "menus": {

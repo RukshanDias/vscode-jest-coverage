@@ -72,6 +72,10 @@ export class FileMethodSelector {
         this.type = type;
     }
 
+    public setSelectionRange(selectionRange: SelectionRange): void {
+        this.selectionRange = selectionRange;
+    }
+
     public getTestFilePaths(): string[] | undefined {
         return this.testFilePaths;
     }
