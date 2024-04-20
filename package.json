@@ -74,7 +74,7 @@
             },
             {
                 "command": "jest-coverage.codelens.browserView",
-                "title": "jest-coverage.codelens.browserView"
+                "title": "View report in browser"
             }
         ],
         "menus": {

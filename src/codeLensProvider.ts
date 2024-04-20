@@ -67,6 +67,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             const codeLensBrowserViewCmd = new vscode.CodeLens(range);
             setupCommand(codeLensBrowserViewCmd, commandType.ViewInBrowser);
             this.codeLenses.push(codeLensBrowserViewCmd);
+
         }
         return this.codeLenses;
     }
