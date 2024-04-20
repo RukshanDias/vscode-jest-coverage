@@ -71,6 +71,10 @@
             {
                 "command": "jest-coverage.codelens.clear",
                 "title": "Clear highlights on editor"
+            },
+            {
+                "command": "jest-coverage.codelens.browserView",
+                "title": "View report in browser"
             }
         ],
         "menus": {
