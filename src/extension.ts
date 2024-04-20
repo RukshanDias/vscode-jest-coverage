@@ -90,6 +90,15 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    vscode.commands.registerCommand("jest-coverage.codelens.browserView", () => {
+        const coverageJsonFilePath = vscode.workspace.getConfiguration("JestCoverage").get<string>("coverageJsonFilePath", "");
+
+        const match = coverageJsonFilePath.match(/^(.*\/).*coverage-final\.json$/);
+        if (match && match[1]) {
+            vscode.env.openExternal(vscode.Uri.file(workspacePath + match[1] + "lcov-report/index.html"));
+        }
+    });
+
     // ----------------------------- Event Listeners ---------------------------------------
     // Event listener for context menu
     const disposableContextMenu = vscode.commands.registerCommand(

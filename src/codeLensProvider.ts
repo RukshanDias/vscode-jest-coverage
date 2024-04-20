@@ -3,6 +3,7 @@ import { FileMethodSelector } from "./fileMethodSelector";
 
 enum commandType {
     Clear,
+    ViewInBrowser,
 }
 
 const clearCommand: vscode.Command = {
@@ -11,11 +12,20 @@ const clearCommand: vscode.Command = {
     tooltip: "Clear highlights on editor",
 };
 
+const viewInBrowserCommand: vscode.Command = {
+    title: "View in browser",
+    command: "jest-coverage.codelens.browserView",
+    tooltip: "View report in browser",
+};
+
 function setupCommand(codeLensObj: vscode.CodeLens, command: commandType): vscode.CodeLens {
     let x: any;
     switch (command) {
         case commandType.Clear:
             x = clearCommand;
+            break;
+        case commandType.ViewInBrowser:
+            x = viewInBrowserCommand;
             break;
     }
     codeLensObj.command = x;
@@ -52,6 +62,11 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             let codeLensClearCmd = new vscode.CodeLens(range);
             setupCommand(codeLensClearCmd, commandType.Clear);
             this.codeLenses.push(codeLensClearCmd);
+
+            // CodeLens view in browser command
+            const codeLensBrowserViewCmd = new vscode.CodeLens(range);
+            setupCommand(codeLensBrowserViewCmd, commandType.ViewInBrowser);
+            this.codeLenses.push(codeLensBrowserViewCmd);
         }
         return this.codeLenses;
     }
