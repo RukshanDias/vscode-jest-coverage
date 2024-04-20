@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { FileMethodSelector, workspacePath } from "./fileMethodSelector";
+import { FileMethodSelector, SelectionRange, workspacePath } from "./fileMethodSelector";
 import { CoverageGenerator } from "./coverageGenerator";
 import { Helper } from "./helper";
 import { CodelensProvider } from "./codeLensProvider";
@@ -33,31 +33,39 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // Register the command for code selection
-    let disposableMethodSelection = vscode.commands.registerCommand("jest-coverage.method", (uri: vscode.Uri) => {
-        if (Helper.haveTestFileFormat([uri])) {
-            vscode.window.showInformationMessage("Pls make selection your fix file!");
-            return;
-        }
-        clearPreviousData();
-
-        fileMethodSelector.setCoverageType("CodeSelection");
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            fileMethodSelector.captureSelectionRange(editor);
-            fileMethodSelector.captureTestFileFromFixFile(editor.document.uri);
-            fileMethodSelector.captureFixFilePaths();
-
-            let testFiles = fileMethodSelector.getTestFilePaths();
-            let fixFiles = fileMethodSelector.getFixFilePaths();
-            let selection = fileMethodSelector.getSelectionRange();
-            if (testFiles && fixFiles) {
-                coverageGenerator.generateCoverage(testFiles, fixFiles, selection);
-                codelensProvider.setVisibility(true);
+    let disposableMethodSelection = vscode.commands.registerCommand(
+        "jest-coverage.method",
+        async (uri: vscode.Uri, lastSelectionRange?: SelectionRange) => {
+            if (Helper.haveTestFileFormat([uri])) {
+                vscode.window.showInformationMessage("Pls make selection your fix file!");
+                return;
             }
-        } else {
-            vscode.window.showErrorMessage("No file is opened.");
+            clearPreviousData();
+
+            fileMethodSelector.setCoverageType("CodeSelection");
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                if (lastSelectionRange) {
+                    fileMethodSelector.setSelectionRange(lastSelectionRange);
+                } else {
+                    fileMethodSelector.captureSelectionRange(editor);
+                    codelensProvider.setVisibility(false);
+                }
+                fileMethodSelector.captureTestFileFromFixFile(editor.document.uri);
+                fileMethodSelector.captureFixFilePaths();
+
+                let testFiles = fileMethodSelector.getTestFilePaths();
+                let fixFiles = fileMethodSelector.getFixFilePaths();
+                let selection = fileMethodSelector.getSelectionRange();
+                if (testFiles && fixFiles) {
+                    await coverageGenerator.generateCoverage(testFiles, fixFiles, selection);
+                    codelensProvider.setVisibility(true);
+                }
+            } else {
+                vscode.window.showErrorMessage("No file is opened.");
+            }
         }
-    });
+    );
 
     context.subscriptions.push(disposableFileSelection);
     context.subscriptions.push(disposableMethodSelection);
@@ -71,7 +79,15 @@ export function activate(context: vscode.ExtensionContext) {
             }
         });
         fileMethodSelector.clear();
-        coverageGenerator.removeDecorations();
+
+        if (coverageGenerator.getDecorationsMap().size > 0) {
+            coverageGenerator.removeDecorations();
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+                Helper.openFileInVscode(editor.document.uri.fsPath);
+            }
+        }
     }
 
     // ---------------------- Declaring CodeLens Provider & commands ---------------
@@ -96,6 +112,13 @@ export function activate(context: vscode.ExtensionContext) {
         const match = coverageJsonFilePath.match(/^(.*\/).*coverage-final\.json$/);
         if (match && match[1]) {
             vscode.env.openExternal(vscode.Uri.file(workspacePath + match[1] + "lcov-report/index.html"));
+        }
+    });
+
+    vscode.commands.registerCommand("jest-coverage.codelens.rerun", (selectionRange: SelectionRange, uri: any) => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            vscode.commands.executeCommand("jest-coverage.method", editor.document.uri, selectionRange);
         }
     });
 

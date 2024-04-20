@@ -4,6 +4,7 @@ import { FileMethodSelector } from "./fileMethodSelector";
 enum commandType {
     Clear,
     ViewInBrowser,
+    ReRun,
 }
 
 const clearCommand: vscode.Command = {
@@ -18,17 +19,29 @@ const viewInBrowserCommand: vscode.Command = {
     tooltip: "View report in browser",
 };
 
-function setupCommand(codeLensObj: vscode.CodeLens, command: commandType): vscode.CodeLens {
-    let x: any;
-    switch (command) {
+const reRunCommand: vscode.Command = {
+    title: "Rerun",
+    command: "jest-coverage.codelens.rerun",
+    tooltip: "re-generate the coverage",
+};
+
+function setupCommand(codeLensObj: vscode.CodeLens, type: commandType, args?: any[]): vscode.CodeLens {
+    let command: any;
+    switch (type) {
         case commandType.Clear:
-            x = clearCommand;
+            command = clearCommand;
             break;
         case commandType.ViewInBrowser:
-            x = viewInBrowserCommand;
+            command = viewInBrowserCommand;
+            break;
+        case commandType.ReRun:
+            command = reRunCommand;
+            if (args) {
+                command.arguments = args;
+            }
             break;
     }
-    codeLensObj.command = x;
+    codeLensObj.command = command;
     return codeLensObj;
 }
 
@@ -68,6 +81,11 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             setupCommand(codeLensBrowserViewCmd, commandType.ViewInBrowser);
             this.codeLenses.push(codeLensBrowserViewCmd);
 
+            // CodeLens rerun command
+            const codeLensRerunCmd = new vscode.CodeLens(range);
+            const args = [this.FMSelector.getSelectionRange()];
+            setupCommand(codeLensRerunCmd, commandType.ReRun, args);
+            this.codeLenses.push(codeLensRerunCmd);
         }
         return this.codeLenses;
     }
