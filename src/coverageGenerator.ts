@@ -4,7 +4,10 @@ import * as vscode from "vscode";
 import { SelectionRange, workspacePath } from "./fileMethodSelector";
 
 export class CoverageGenerator {
-    private decorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> = new Map();
+    private coverageInfoDecorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> =
+        new Map();
+    private topLineDecorationsMap: Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> =
+        new Map();
     private coverageViewOption: string[] = ["Code inline format", "View coverage report in browser"];
 
     public async generateCoverage(testFilePaths: string[], fixFilePaths: string[], selectionRange?: SelectionRange): Promise<void> {
@@ -86,9 +89,23 @@ export class CoverageGenerator {
         return Helper.convertPathToUnix(command);
     }
 
-    private highlightNotCoveredLines(filePath: string, coveredLines: number[][]) {
+    // --------------------- InlineView & Decorations ---------------------------
+
+    private inlineCoverageView(coverageJsonFilePath: string, selectionRange?: SelectionRange): void {
+        let coverageFilePath = workspacePath + coverageJsonFilePath;
+        const coverageData = this.parseCoverageReport(coverageFilePath, selectionRange);
+        coverageData.forEach((notCoveredLines: number[][], file: string) => {
+            this.highlightNotCoveredLines(file, notCoveredLines);
+            Helper.openFileInVscode(file);
+        });
+        if (selectionRange) {
+            this.setLineDecoration(selectionRange);
+        }
+    }
+
+    private highlightNotCoveredLines(filePath: string, coveredLines: number[][]): void {
         const uri = vscode.Uri.file(filePath);
-        const coveredLineDecorationType = this.uncoveredDecorationType();
+        const unCoveredLineDecorationType = this.uncoveredDecorationType();
         const decorations: vscode.DecorationOptions[] = [];
         let message: string;
         vscode.window.showTextDocument(uri).then((editor) => {
@@ -106,9 +123,24 @@ export class CoverageGenerator {
                 };
                 decorations.push(decoration);
             });
-            editor.setDecorations(coveredLineDecorationType, decorations);
-            this.decorationsMap.set(editor.document.uri.fsPath, { decorationType: coveredLineDecorationType, decorations: decorations });
+            editor.setDecorations(unCoveredLineDecorationType, decorations);
+            this.coverageInfoDecorationsMap.set(editor.document.uri.fsPath, {
+                decorationType: unCoveredLineDecorationType,
+                decorations: decorations,
+            });
         });
+    }
+
+    private setLineDecoration(selectionRange: SelectionRange): void {
+        const topLineDecorationType = this.topLineDecorationType();
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const startLine = editor.document.lineAt(selectionRange.start - 1).range;
+            const endLine = editor.document.lineAt(selectionRange.end).range;
+            const decorations: vscode.DecorationOptions[] = [{ range: startLine }, { range: endLine }];
+            editor.setDecorations(topLineDecorationType, decorations);
+            this.topLineDecorationsMap.set(editor.document.uri.fsPath, { decorationType: topLineDecorationType, decorations: decorations });
+        }
     }
 
     private uncoveredDecorationType(): vscode.TextEditorDecorationType {
@@ -118,36 +150,40 @@ export class CoverageGenerator {
         return coveredLineDecorationType;
     }
 
-    private inlineCoverageView(coverageJsonFilePath: string, selectionRange?: SelectionRange): void {
-        let coverageFilePath = workspacePath + coverageJsonFilePath;
-        const coverageData = this.parseCoverageReport(coverageFilePath, selectionRange);
-        coverageData.forEach((notCoveredLines: number[][], file: string) => {
-            this.highlightNotCoveredLines(file, notCoveredLines);
-            Helper.openFileInVscode(file);
-        });
+    private topLineDecorationType(): vscode.TextEditorDecorationType {
+        const topLineDecorationOption: vscode.DecorationRenderOptions = {
+            isWholeLine: true,
+            borderWidth: `2px 0 0 0`,
+            borderStyle: "solid",
+            borderColor: "rgba(246, 153, 92, 0.4)",
+        };
+        return vscode.window.createTextEditorDecorationType(topLineDecorationOption);
     }
 
-    public getDecorationsMap(): Map<
-        string,
-        {
-            decorationType: vscode.TextEditorDecorationType;
-            decorations: vscode.DecorationOptions[];
-        }
-    > {
-        return this.decorationsMap;
+    public getCoverageInfoDecorationMap(): Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> {
+        return this.coverageInfoDecorationsMap;
     }
 
-    // Function to remove decorations when file is closed
-    public removeDecorations(filePath?: string) {
+    public getTopLineDecorationMap(): Map<string, { decorationType: vscode.TextEditorDecorationType; decorations: vscode.DecorationOptions[] }> {
+        return this.topLineDecorationsMap;
+    }
+
+    public removeCoverageInfoDecorations(filePath?: string): void {
         if (!filePath) {
-            this.decorationsMap.clear();
+            this.coverageInfoDecorationsMap.clear();
         } else {
-            const decorations = this.decorationsMap.get(filePath);
+            const decorations = this.coverageInfoDecorationsMap.get(filePath);
             if (decorations) {
-                this.decorationsMap.delete(filePath);
+                this.coverageInfoDecorationsMap.delete(filePath);
             }
         }
     }
+
+    public removeTopLineDecorations(): void {
+        this.topLineDecorationsMap.clear();
+    }
+
+    // ------------------------- Parse data from coverage Report ----------------------------
 
     // Function to parse Jest coverage report
     private parseCoverageReport(filePath: string, selectionRange?: SelectionRange): Map<string, number[][]> {

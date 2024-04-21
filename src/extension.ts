@@ -80,8 +80,8 @@ export function activate(context: vscode.ExtensionContext) {
         });
         fileMethodSelector.clear();
 
-        if (coverageGenerator.getDecorationsMap().size > 0) {
-            coverageGenerator.removeDecorations();
+        if (coverageGenerator.getCoverageInfoDecorationMap().size > 0) {
+            coverageGenerator.removeCoverageInfoDecorations();
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 vscode.commands.executeCommand("workbench.action.closeActiveEditor");
@@ -99,7 +99,8 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             console.log("clear");
             codelensProvider.setVisibility(false);
-            coverageGenerator.removeDecorations(editor.document.uri.fsPath);
+            coverageGenerator.removeCoverageInfoDecorations(editor.document.uri.fsPath);
+            coverageGenerator.removeTopLineDecorations();
 
             vscode.commands.executeCommand("workbench.action.closeActiveEditor");
             Helper.openFileInVscode(editor.document.uri.fsPath);
@@ -143,18 +144,30 @@ export function activate(context: vscode.ExtensionContext) {
     function handleActiveTextEditorChange(editor: vscode.TextEditor | undefined) {
         if (editor) {
             const filePath = editor.document.uri.fsPath;
-            let hist = coverageGenerator.getDecorationsMap().get(filePath);
-            if (hist) {
-                editor.setDecorations(hist.decorationType, hist.decorations);
+            let coverageInfoDecoHist = coverageGenerator.getCoverageInfoDecorationMap().get(filePath);
+            if (coverageInfoDecoHist) {
+                editor.setDecorations(coverageInfoDecoHist.decorationType, coverageInfoDecoHist.decorations);
+            }
+
+            let topLineDecoHist = coverageGenerator.getTopLineDecorationMap().get(filePath);
+            if (topLineDecoHist) {
+                editor.setDecorations(topLineDecoHist.decorationType, topLineDecoHist.decorations);
             }
         }
     }
 
     function handleTextDocumentClosed(document: vscode.TextDocument) {
         const filePath = document.uri.fsPath;
-        let hist = coverageGenerator.getDecorationsMap().get(filePath);
-        if (hist) {
-            coverageGenerator.removeDecorations(filePath);
+        let coverageInfoDecoHist = coverageGenerator.getCoverageInfoDecorationMap().get(filePath);
+        if (coverageInfoDecoHist) {
+            coverageGenerator.removeCoverageInfoDecorations(filePath);
+        }
+
+        let topLineDecoHist = coverageGenerator.getTopLineDecorationMap().get(filePath);
+        // If topLineDeco exists then clear decoration & hide codelens
+        if (topLineDecoHist) {
+            coverageGenerator.removeTopLineDecorations();
+            codelensProvider.setVisibility(false);
         }
     }
 
