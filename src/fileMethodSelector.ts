@@ -38,11 +38,13 @@ export class FileMethodSelector {
             for (const file of this.testFilePaths) {
                 const fileExtension = file.split(".").pop();
                 const testFileFormat = vscode.workspace.getConfiguration("JestCoverage").get<string>("testFileFormat", "");
-                let testFilePath = file.replace(new RegExp(`${testFileFormat}$`), "." + fileExtension);
-                if (Helper.isFileAvailable(testFilePath)) {
-                    capturedFixFilePaths.push(testFilePath);
+                let fixFilePath = file.replace(new RegExp(`${testFileFormat}$`), "." + fileExtension);
+                if (Helper.isFileAvailable(fixFilePath)) {
+                    capturedFixFilePaths.push(fixFilePath);
                 } else {
-                    capturedFixFilePaths.push("");
+                    vscode.window.showErrorMessage("Couldn't find the relevant production file");
+                    this.clear();
+                    return;
                 }
             }
             this.fixFilePaths = capturedFixFilePaths;
@@ -57,7 +59,9 @@ export class FileMethodSelector {
         if (Helper.isFileAvailable(testFilePath)) {
             this.testFilePaths = [testFilePath];
         } else {
-            vscode.window.showInformationMessage("No test file created for this file.");
+            vscode.window.showErrorMessage("Couldn't find the relevant test file");
+            this.clear();
+            return;
         }
     }
 

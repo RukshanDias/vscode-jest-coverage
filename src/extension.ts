@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         "jest-coverage.method",
         async (uri: vscode.Uri, lastSelectionRange?: SelectionRange) => {
             if (Helper.haveTestFileFormat([uri])) {
-                vscode.window.showInformationMessage("Pls make selection your fix file!");
+                vscode.window.showInformationMessage("Pls select your production file!");
                 return;
             }
             clearPreviousData();
