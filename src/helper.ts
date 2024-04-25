@@ -104,4 +104,9 @@ export class Helper {
         }
         return true;
     }
+
+    static removeSelection(editor: vscode.TextEditor): void {
+        // Replace with an empty selection
+        editor.selection = new vscode.Selection(editor.selection.active, editor.selection.active);
+    }
 }

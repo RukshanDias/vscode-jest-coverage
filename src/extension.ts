@@ -60,6 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (testFiles && fixFiles) {
                     await coverageGenerator.generateCoverage(testFiles, fixFiles, selection);
                     codelensProvider.setVisibility(true);
+                    Helper.removeSelection(editor);
                 }
             } else {
                 vscode.window.showErrorMessage("No file is opened.");
