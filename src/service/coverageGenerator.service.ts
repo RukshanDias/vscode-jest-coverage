@@ -28,7 +28,7 @@ export class CoverageGenerator {
             if (!selectionRange) {
                 // Retrieve the selected value of Coverage View setting
                 const selectedOptionIndex = this.coverageViewOption.findIndex(
-                    (option) => option === vscode.workspace.getConfiguration().get("JestCoverage.coverageViewOption")
+                    (option) => option === vscode.workspace.getConfiguration("JestCoverage").get<string>("coverageViewOption")
                 );
                 Logger.debug('Do not have selection range. Selected view option: ', this.coverageViewOption[selectedOptionIndex]);
 

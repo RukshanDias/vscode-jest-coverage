@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 const LOG_LEVEL = "debug";
-const WorkspacePath = vscode.workspace.rootPath;
+const WorkspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
 
 export function GetLogLevel(): string {
