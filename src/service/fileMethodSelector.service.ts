@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Helper } from "./helper";
+import { Helper } from "../helper/helper";
 
 export class FileMethodSelector {
     private fixFilePaths: string[] | undefined;
@@ -105,4 +105,4 @@ export type SelectionRange = {
 
 export type CoverageType = "MultiFile" | "SingleFile" | "CodeSelection";
 
-export const workspacePath = vscode.workspace.rootPath;
+

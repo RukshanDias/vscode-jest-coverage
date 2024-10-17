@@ -1,7 +1,10 @@
 import path from "path";
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { workspacePath } from "./fileMethodSelector";
+import { FileMethodSelector } from "../service/fileMethodSelector.service";
+import { Logger } from "./logger";
+import { CoverageGenerator } from "../service/coverageGenerator.service";
+import { GetworkspacePath } from "../config";
 
 export class Helper {
     static isFileAvailable(uri: string): boolean {
@@ -20,7 +23,7 @@ export class Helper {
     }
 
     static convertPathToRelative(paths: string[]): string[] {
-        const relativePaths = paths.map((file) => path.relative(workspacePath!, file));
+        const relativePaths = paths.map((file) => path.relative(GetworkspacePath()!, file));
         return relativePaths;
     }
 
@@ -62,6 +65,26 @@ export class Helper {
         });
     }
 
+    static clearPreviousData(fileMethodSelector: FileMethodSelector, coverageGenerator: CoverageGenerator) {
+        // Kill previous terminal
+        vscode.window.terminals.forEach((terminal: vscode.Terminal) => {
+            if (terminal.name === "Jest Coverage") {
+                terminal.dispose();
+            }
+        });
+        fileMethodSelector.clear();
+
+        if (coverageGenerator.getCoverageInfoDecorationMap().size > 0) {
+            coverageGenerator.removeCoverageInfoDecorations();
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+                Helper.openFileInVscode(editor.document.uri.fsPath);
+            }
+        }
+        Logger.debug("Cleared previous data: terminal, fileMethodSelector, coverageInfoDecorations");
+    }
+
     static watchFile(filePath: string): Promise<string> {
         return new Promise((resolve) => {
             const intervalId = setInterval(() => {
@@ -78,6 +101,8 @@ export class Helper {
             fs.unlink(filePath, (err) => {
                 if (err && err.code !== "ENOENT") {
                     reject(err);
+                } else if (err && err.code === "ENOENT") {
+                    vscode.window.showInformationMessage("No coverage file found.\nPls select the correct file in settings.");
                 } else {
                     resolve();
                 }
