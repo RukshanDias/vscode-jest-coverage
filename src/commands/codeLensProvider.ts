@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { FileMethodSelector } from "./fileMethodSelector";
+import { FileMethodSelector } from "../service/fileMethodSelector.service";
+import { Logger } from "../helper/logger";
 
 enum commandType {
     Clear,
@@ -95,6 +96,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     }
 
     public setVisibility(visible: boolean): void {
+        Logger.debug("Setting Codelense visibility to " + visible);
         this.isVisible = visible;
     }
 
