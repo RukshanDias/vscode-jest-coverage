@@ -21,11 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Linting
-      #   run: npm run lint
+      - name: Linting
+        run: npm run lint
 
-      # - name: Testing
-      #   run: npm test
+      - name: Testing
+        run: npm test
 
       - name: Compile
         run: npm run compile
