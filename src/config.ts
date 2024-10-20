@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Helper } from './helper/helper';
 
-const LOG_LEVEL = "debug";
+const LOG_LEVEL = "info";
 const WorkspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 const TerminalName = "Jest Coverage";
 
