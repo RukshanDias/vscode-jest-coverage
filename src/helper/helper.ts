@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { FileMethodSelector } from "../service/fileMethodSelector.service";
 import { Logger } from "./logger";
 import { CoverageGenerator } from "../service/coverageGenerator.service";
-import { GetworkspacePath } from "../config";
+import { GetTerminalName, GetworkspacePath } from "../config";
 
 export class Helper {
     static isFileAvailable(uri: string): boolean {
@@ -54,7 +54,7 @@ export class Helper {
             }
 
             const terminalOption: vscode.TerminalOptions = {
-                name: "Jest Coverage",
+                name: GetTerminalName(),
                 shellPath: terminalPath,
             };
 
@@ -68,7 +68,7 @@ export class Helper {
     static clearPreviousData(fileMethodSelector: FileMethodSelector, coverageGenerator: CoverageGenerator) {
         // Kill previous terminal
         vscode.window.terminals.forEach((terminal: vscode.Terminal) => {
-            if (terminal.name === "Jest Coverage") {
+            if (terminal.name === GetTerminalName()) {
                 terminal.dispose();
             }
         });
@@ -102,7 +102,8 @@ export class Helper {
                 if (err && err.code !== "ENOENT") {
                     reject(err);
                 } else if (err && err.code === "ENOENT") {
-                    vscode.window.showInformationMessage("No coverage file found.\nPls select the correct file in settings.");
+                    vscode.window.showErrorMessage("No coverage file found.\nPls select the correct file in settings.");
+                    reject(err);
                 } else {
                     resolve();
                 }

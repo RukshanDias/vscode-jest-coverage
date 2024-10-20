@@ -43,7 +43,7 @@ describe('FileSelector', () => {
         { fsPath: 'root/path1/file.ts', scheme: 'not-file' }
         , { fsPath: 'root/path2/file.ts', scheme: 'file' }
       ];
-      let spy = jest.spyOn(vscode.window, 'showErrorMessage')
+      let spy = jest.spyOn(vscode.window, 'showErrorMessage');
 
       component.captureTestFilePaths(mockUris as vscode.Uri[]);
       expect(spy).toHaveBeenCalled();

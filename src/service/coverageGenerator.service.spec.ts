@@ -70,7 +70,7 @@ describe('CoverageGenerator', () => {
 
         it('should generate coverage report', async () => {
             await component.generateCoverage(testFilePaths, fixFilePaths);
-            expect(Helper.generateCoverageReport).toHaveBeenCalledWith('npm test --coverage', 'root/path-of-file/coverage/jest/coverage-final.json', ['relative/test1.spec.ts', 'relative/test2.spec.ts']);
+            expect(Helper.generateCoverageReport).toHaveBeenCalledWith('npm test --coverage', 'd:/Jest_Demo/coverage/jest/coverage-final.json', ['relative/test1.spec.ts', 'relative/test2.spec.ts']);
         });
 
         it('should open coverage report in browser', async () => {
@@ -94,7 +94,7 @@ describe('CoverageGenerator', () => {
                 jest.spyOn(vscode.Uri, 'file').mockImplementation((path: string) => path as any);
                 
                 await component.generateCoverage(testFilePaths, fixFilePaths, selectionRange);
-                expect(vscode.Uri.file).toHaveBeenCalledWith('root/path-of-file/coverage/jest/lcov-report/fix1.ts.html');
+                expect(vscode.Uri.file).toHaveBeenCalledWith('d:/Jest_Demo/coverage/jest/lcov-report/fix1.ts.html');
             });
 
             it('should set up the common report file ready to display is given file do not exsists', async () => {
@@ -102,8 +102,8 @@ describe('CoverageGenerator', () => {
                 jest.spyOn(vscode.Uri, 'file').mockImplementation((path: string) => path as any);
                 
                 await component.generateCoverage(testFilePaths, fixFilePaths, selectionRange);
-                expect(vscode.Uri.file).toHaveBeenCalledWith('root/path-of-file/coverage/jest/lcov-report/index.html');
+                expect(vscode.Uri.file).toHaveBeenCalledWith('d:/Jest_Demo/coverage/jest/lcov-report/index.html');
             });
-        })
+        });
     });
 });

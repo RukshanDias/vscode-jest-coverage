@@ -6,7 +6,6 @@ module.exports = {
   },
   rootDir: "./src",
   moduleNameMapper: {
-    // "^vscode$": "jest-mock-vscode"
     '^vscode$': '<rootDir>/__mocks__/vscode.js'
   }
 };
