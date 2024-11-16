@@ -5,10 +5,16 @@ import { Helper } from "./helper/helper";
 import { Logger } from "./helper/logger";
 import { CodelensProvider } from "./commands/codeLensProvider";
 import { GetCoverageFolderPath } from "./config";
+import { Copilot } from "./service/copilot.service";
+import { getMethodPrompt, ANNOTATION_PROMPT } from "./copilot/prompts";
+import { CodeAnalyzer } from "./commands/codeAnalyzer";
+import path from "path";
 
 export function activate(context: vscode.ExtensionContext) {
     let fileMethodSelector = new FileMethodSelector();
     let coverageGenerator = new CoverageGenerator();
+    const codeAnalyzer = new CodeAnalyzer();
+    const copilot = new Copilot();
 
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
@@ -106,6 +112,77 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             vscode.commands.executeCommand("jest-coverage.method", editor.document.uri, selectionRange);
+        }
+    });
+
+    vscode.commands.registerCommand("jest-coverage.codelens.copilot", (selectionRange: SelectionRange, uri: any) => {
+        const editor = vscode.window.activeTextEditor;
+        const testFiles = fileMethodSelector.getTestFilePaths();
+        const testFile = testFiles ? testFiles[0] : "";
+
+        // expected:
+        /*
+         *1. Fix file= selected function name, line num, public/private, params, returns, services called, tree structure of method
+         *2. Test file= name of the test file, is test file created?, already tests written for func?, line to write(default last line)
+         *3. Coverage Data= which parts has not been covered?
+         *4. recipe prompt= instructions
+         **/
+        if (editor) {
+            vscode.commands.executeCommand("jest-coverage.copilot", editor, testFile, selectionRange);
+        }
+    });
+
+    // -----------------------------Copilot---------------------------------------
+    const disposableCopilot = vscode.commands.registerCommand("jest-coverage.copilot", async (textEditor: vscode.TextEditor, testFile: string, selectionRange: SelectionRange) => {
+        // execute below
+        //   const releventMethodsPrompt = getRelventMethodsPrompt(textEditor);
+        //   const testFilePrompt = testFile ? getTextFileData(testFile) : "no test file created";
+        //   const coverageData = getCoverageData(testFile);
+        // correct line to add generated tests
+
+        // get the method details
+        const methodDetails = codeAnalyzer.getMethodDetailsInRange(selectionRange.filePath, selectionRange.start, selectionRange.end);
+        const testFileData = codeAnalyzer.getTestDetails(testFile);
+
+
+        // select the 4o chat model
+        let [model] = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "gpt-4o",
+        });
+
+        // init the chat message
+        const messages = [
+            vscode.LanguageModelChatMessage.User(getMethodPrompt(methodDetails)),
+            vscode.LanguageModelChatMessage.User("this is the test file written already use this as a sample: \n" + testFileData),
+            vscode.LanguageModelChatMessage.User(ANNOTATION_PROMPT),
+            // vscode.LanguageModelChatMessage.User(codeWithLineNumbers)
+        ];
+
+        // make sure the model is available
+        if (model) {
+            // send the messages array to the model and get the response
+            let chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
+
+            // display as message
+            // let allFragments = [];
+            // for await (const fragment of chatResponse.text) {
+            //     allFragments.push(fragment);
+            // }
+            // vscode.window.showInformationMessage(allFragments.join(""));
+
+            const testEditor = await Helper.openFileInVscode(testFile);
+            
+            if (testEditor) {
+                // display as file text
+                for await (const fragment of chatResponse.text) {
+                    await testEditor.edit(edit => {
+                        const lastLine = testEditor.document.lineAt(testEditor.document.lineCount - 1);
+                        const position = new vscode.Position(lastLine.lineNumber, lastLine.text.length);
+                        edit.insert(position, fragment);
+                    });
+                }
+            }
         }
     });
 
