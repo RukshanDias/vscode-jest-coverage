@@ -6,6 +6,7 @@ enum commandType {
     Clear,
     ViewInBrowser,
     ReRun,
+    Copilot
 }
 
 const clearCommand: vscode.Command = {
@@ -26,6 +27,12 @@ const reRunCommand: vscode.Command = {
     tooltip: "re-generate the coverage",
 };
 
+const copilotCommand: vscode.Command = {
+    title: "copilot",
+    command: "jest-coverage.codelens.copilot",
+    tooltip: "generate tests",
+};
+
 function setupCommand(codeLensObj: vscode.CodeLens, type: commandType, args?: any[]): vscode.CodeLens {
     let command: any;
     switch (type) {
@@ -40,6 +47,9 @@ function setupCommand(codeLensObj: vscode.CodeLens, type: commandType, args?: an
             if (args) {
                 command.arguments = args;
             }
+            break;
+        case commandType.Copilot:
+            command = copilotCommand;
             break;
     }
     codeLensObj.command = command;
@@ -87,6 +97,11 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             const args = [this.FMSelector.getSelectionRange()];
             setupCommand(codeLensRerunCmd, commandType.ReRun, args);
             this.codeLenses.push(codeLensRerunCmd);
+
+            // CodeLens copilot command
+            const codeLensCopilotCmd = new vscode.CodeLens(range);
+            setupCommand(codeLensCopilotCmd, commandType.Copilot);
+            this.codeLenses.push(codeLensCopilotCmd);
         }
         return this.codeLenses;
     }
