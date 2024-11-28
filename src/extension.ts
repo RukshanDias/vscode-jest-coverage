@@ -5,10 +5,14 @@ import { Helper } from "./helper/helper";
 import { Logger } from "./helper/logger";
 import { CodelensProvider } from "./commands/codeLensProvider";
 import { GetCoverageFolderPath } from "./config";
+import { Copilot } from "./service/copilot.service";
+import { CodeAnalyzer } from "./commands/codeAnalyzer";
 
 export function activate(context: vscode.ExtensionContext) {
     let fileMethodSelector = new FileMethodSelector();
     let coverageGenerator = new CoverageGenerator();
+    const codeAnalyzer = new CodeAnalyzer();
+    const copilot = new Copilot(fileMethodSelector, codeAnalyzer);
 
     // Register the command for file/s selection
     let disposableFileSelection = vscode.commands.registerCommand("jest-coverage.getFilePath", (uris: vscode.Uri[]) => {
@@ -73,8 +77,20 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
+    let disposableTestGeneration = vscode.commands.registerCommand("jest-coverage.generateTest", async () => {
+        const editor = vscode.window.activeTextEditor;
+        Helper.clearPreviousData(fileMethodSelector, coverageGenerator);
+        if (editor) {
+            fileMethodSelector.captureSelectionRange(editor);
+            fileMethodSelector.captureTestFileFromFixFile(editor.document.uri);
+            fileMethodSelector.captureFixFilePaths();
+            vscode.commands.executeCommand("jest-coverage.codelens.copilot");
+        }
+    });
+
     context.subscriptions.push(disposableFileSelection);
     context.subscriptions.push(disposableMethodSelection);
+    context.subscriptions.push(disposableTestGeneration);
 
     // ---------------------- Declaring CodeLens Provider & commands ---------------
     const codelensProvider = new CodelensProvider(fileMethodSelector);
@@ -83,7 +99,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("jest-coverage.codelens.clear", () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
-            console.log("clear");
             codelensProvider.setVisibility(false);
             coverageGenerator.removeCoverageInfoDecorations(editor.document.uri.fsPath);
             coverageGenerator.removeTopLineDecorations();
@@ -107,6 +122,42 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             vscode.commands.executeCommand("jest-coverage.method", editor.document.uri, selectionRange);
         }
+    });
+
+    vscode.commands.registerCommand("jest-coverage.codelens.copilot", () => {
+        if (vscode.window.activeTextEditor) {
+            // workbench.action.chat.attachFile
+            vscode.commands.executeCommand('workbench.action.chat.open', "@Jest-Coverage-Chat Generate unit tests");
+        }
+    });
+
+    // -----------------------------Copilot---------------------------------------
+    const Chat = vscode.chat.createChatParticipant("jest-coverage-chat", async (request, context, response, token) => {
+        try {
+            await copilot.listenChatParticipant(request, context, response, token);
+            vscode.commands.executeCommand('workbench.action.chat.focusInput', "@Jest-Coverage-Chat ");
+        } catch (error) {
+            console.error("Error in listenChatParticipant:", error);
+        }
+    });
+    Chat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'imgs/icon.png');
+
+    // button registration
+    vscode.commands.registerCommand("jest-coverage.chat-button", async (code: string, testFile: string) => {
+
+        const testEditor = await Helper.openFileInVscode(testFile);
+            
+            if (testEditor) {
+                // display as file text
+                for await (const fragment of code) {
+                    await testEditor.edit(edit => {
+                        const lastLine = testEditor.document.lineAt(testEditor.document.lineCount - 1);
+                        const position = new vscode.Position(lastLine.lineNumber, lastLine.text.length);
+                        edit.insert(position, fragment);
+                    });
+                }
+                vscode.commands.executeCommand("workbench.action.chat.close");
+            }
     });
 
     // ----------------------------- Event Listeners ---------------------------------------

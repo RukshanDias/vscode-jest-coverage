@@ -111,11 +111,12 @@ export class Helper {
         });
     }
 
-    static async openFileInVscode(filePath: string): Promise<void> {
+    static async openFileInVscode(filePath: string): Promise<vscode.TextEditor | undefined> {
         try {
             const uri = vscode.Uri.file(filePath);
             const document = await vscode.workspace.openTextDocument(uri);
-            await vscode.window.showTextDocument(document, { preview: false });
+            const editor = await vscode.window.showTextDocument(document, { preview: false });
+            return editor;
         } catch (error) {
             console.error("Error:", error);
         }
