@@ -79,31 +79,63 @@
             {
                 "command": "jest-coverage.codelens.rerun",
                 "title": "Re-generate test coverage"
+            },
+            {
+                "command": "jest-coverage.codelens.copilot",
+                "title": "copilot"
+            },
+            {
+                "command": "jest-coverage.generateTest",
+                "title": "Generate tests using Copilot"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
                     "command": "jest-coverage.contextMenuFilePathOption",
-                    "when": "resourceFilename =~ /^.*\\.(test|spec)\\.(js|ts)$/i",
+                    "when": "resourceFilename =~ /^.*\\.(test|spec)\\.(js|jsx|ts|tsx)$/i",
                     "group": "navigation"
                 }
             ],
             "scm/resourceState/context": [
                 {
                     "command": "jest-coverage.sourceControlMenuFilePathOption",
-                    "when": "resourceFilename =~ /^.*\\.(test|spec)\\.(js|ts)$/i",
+                    "when": "resourceFilename =~ /^.*\\.(test|spec)\\.(js|jsx|ts|tsx)$/i",
                     "group": "navigation"
                 }
             ],
             "editor/context": [
                 {
+                    "submenu": "jest-coverage.menuGroup",
+                    "group": "1_copilot"
+                  }
+            ],
+            "jest-coverage.menuGroup": [ 
+                {
                     "command": "jest-coverage.method",
-                    "when": "resourceFilename =~ /^.*\\.(js|ts)$/i && editorHasSelection",
+                    "when": "resourceFilename =~ /^.*\\.(js|jsx|ts|tsx)$/i && editorHasSelection",
+                    "group": "navigation"
+                },
+                {
+                    "command": "jest-coverage.generateTest",
+                    "when": "resourceFilename =~ /^.*\\.(js|jsx|ts|tsx)$/i && editorHasSelection",
                     "group": "navigation"
                 }
             ]
         },
+        "submenus": [
+            {
+                "id": "jest-coverage.menuGroup",
+                "label": "Jest Quick Coverage"
+            }
+        ],
+        "chatParticipants": [
+            {
+                "id": "jest-coverage-chat",
+                "name": "Jest-Coverage-Chat",
+                "description": "Generate Jest unit tests"
+            }
+        ],
         "activationEvents": [
             "*"
         ]
@@ -120,14 +152,19 @@
         "@types/jest": "^29.5.13",
         "@types/mocha": "^10.0.6",
         "@types/node": "18.x",
-        "@types/vscode": "^1.85.0",
+        "@types/vscode": "^1.90.0",
         "@typescript-eslint/eslint-plugin": "^7.0.2",
         "@typescript-eslint/parser": "^7.0.2",
         "@vscode/test-cli": "^0.0.6",
         "@vscode/test-electron": "^2.3.9",
         "eslint": "^8.56.0",
+        "ts-morph": "^24.0.0",
         "jest": "^29.7.0",
         "ts-jest": "^29.2.5",
         "typescript": "^5.6.3"
+    },
+    "dependencies": {
+        "@vscode/prompt-tsx": "^0.3.0-alpha.13"
+        
     }
 }
